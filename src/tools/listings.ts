@@ -80,6 +80,32 @@ export function registerListingTools(server: McpServer, client: AmazonAppstoreCl
   );
 
   server.tool(
+    'delete_listing',
+    'Delete a localized listing for a specific language. Cannot delete the default language listing.',
+    {
+      appId: z.string().describe('Amazon app ID'),
+      editId: z.string().describe('Edit ID'),
+      language: z.string().describe('Language code to delete (e.g. "fr-FR")'),
+    },
+    async ({ appId, editId, language }) => {
+      try {
+        // Get ETag first
+        const { etag } = await client.request<Listing>(
+          `/applications/${appId}/edits/${editId}/listings/${language}`
+        );
+
+        await client.request(
+          `/applications/${appId}/edits/${editId}/listings/${language}`,
+          { method: 'DELETE', etag }
+        );
+        return { content: [{ type: 'text' as const, text: `Listing for ${language} deleted.` }] };
+      } catch (error) {
+        return formatError(error);
+      }
+    }
+  );
+
+  server.tool(
     'get_app_details',
     'Get app details (contact info, default language)',
     {

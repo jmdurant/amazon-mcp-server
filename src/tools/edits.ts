@@ -52,6 +52,48 @@ export function registerEditTools(server: McpServer, client: AmazonAppstoreClien
   );
 
   server.tool(
+    'get_edit_by_id',
+    'Get a specific edit by its ID',
+    {
+      appId: z.string().describe('Amazon app ID'),
+      editId: z.string().describe('Edit ID'),
+    },
+    async ({ appId, editId }) => {
+      try {
+        const { data, etag } = await client.request<Edit>(
+          `/applications/${appId}/edits/${editId}`
+        );
+        return {
+          content: [{
+            type: 'text' as const,
+            text: `Edit ${editId}:\n${JSON.stringify(data, null, 2)}\nETag: ${etag ?? 'none'}`,
+          }],
+        };
+      } catch (error) {
+        return formatError(error);
+      }
+    }
+  );
+
+  server.tool(
+    'get_previous_edit',
+    'Get the previous (most recently committed) edit for an app',
+    {
+      appId: z.string().describe('Amazon app ID'),
+    },
+    async ({ appId }) => {
+      try {
+        const { data } = await client.request<Edit>(
+          `/applications/${appId}/edits/previous`
+        );
+        return { content: [{ type: 'text' as const, text: `Previous edit:\n${JSON.stringify(data, null, 2)}` }] };
+      } catch (error) {
+        return formatError(error);
+      }
+    }
+  );
+
+  server.tool(
     'delete_edit',
     'Delete a draft edit (use if an orphaned edit is blocking a new one)',
     {
@@ -60,9 +102,14 @@ export function registerEditTools(server: McpServer, client: AmazonAppstoreClien
     },
     async ({ appId, editId }) => {
       try {
+        // Get ETag first
+        const { etag } = await client.request<Edit>(
+          `/applications/${appId}/edits/${editId}`
+        );
+
         await client.request(
           `/applications/${appId}/edits/${editId}`,
-          { method: 'DELETE' }
+          { method: 'DELETE', etag }
         );
         return { content: [{ type: 'text' as const, text: `Edit ${editId} deleted.` }] };
       } catch (error) {

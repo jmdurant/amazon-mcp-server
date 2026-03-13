@@ -22,6 +22,9 @@ if (config) {
   const { registerListingTools } = await import('./tools/listings.js');
   const { registerAvailabilityTools } = await import('./tools/availability.js');
   const { registerImageTools } = await import('./tools/images.js');
+  const { registerVideoTools } = await import('./tools/videos.js');
+  const { registerTargetingTools } = await import('./tools/targeting.js');
+  const { registerTestingTools } = await import('./tools/testing.js');
 
   const client = new AmazonAppstoreClient(config);
   registerEditTools(server, client);
@@ -29,6 +32,9 @@ if (config) {
   registerListingTools(server, client);
   registerAvailabilityTools(server, client);
   registerImageTools(server, client);
+  registerVideoTools(server, client);
+  registerTargetingTools(server, client);
+  registerTestingTools(server, client);
 } else {
   const errors = getConfigErrors();
   const missingKeys = errors.map((e) => e.key);

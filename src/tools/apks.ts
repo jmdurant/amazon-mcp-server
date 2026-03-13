@@ -30,6 +30,52 @@ export function registerApkTools(server: McpServer, client: AmazonAppstoreClient
   );
 
   server.tool(
+    'get_apk',
+    'Get details about a specific APK in an edit',
+    {
+      appId: z.string().describe('Amazon app ID'),
+      editId: z.string().describe('Edit ID'),
+      apkId: z.string().describe('APK ID'),
+    },
+    async ({ appId, editId, apkId }) => {
+      try {
+        const { data, etag } = await client.request<Apk>(
+          `/applications/${appId}/edits/${editId}/apks/${apkId}`
+        );
+        return {
+          content: [{
+            type: 'text' as const,
+            text: `${JSON.stringify(data, null, 2)}\nETag: ${etag ?? 'none'}`,
+          }],
+        };
+      } catch (error) {
+        return formatError(error);
+      }
+    }
+  );
+
+  server.tool(
+    'delete_apk',
+    'Delete a specific APK from an edit',
+    {
+      appId: z.string().describe('Amazon app ID'),
+      editId: z.string().describe('Edit ID'),
+      apkId: z.string().describe('APK ID to delete'),
+    },
+    async ({ appId, editId, apkId }) => {
+      try {
+        await client.request(
+          `/applications/${appId}/edits/${editId}/apks/${apkId}`,
+          { method: 'DELETE' }
+        );
+        return { content: [{ type: 'text' as const, text: `APK ${apkId} deleted.` }] };
+      } catch (error) {
+        return formatError(error);
+      }
+    }
+  );
+
+  server.tool(
     'upload_apk',
     'Upload an APK to an edit. Creates the edit automatically if editId is not provided.',
     {
