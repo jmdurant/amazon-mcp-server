@@ -21,12 +21,14 @@ if (config) {
   const { registerApkTools } = await import('./tools/apks.js');
   const { registerListingTools } = await import('./tools/listings.js');
   const { registerAvailabilityTools } = await import('./tools/availability.js');
+  const { registerImageTools } = await import('./tools/images.js');
 
   const client = new AmazonAppstoreClient(config);
   registerEditTools(server, client);
   registerApkTools(server, client);
   registerListingTools(server, client);
   registerAvailabilityTools(server, client);
+  registerImageTools(server, client);
 } else {
   const errors = getConfigErrors();
   const missingKeys = errors.map((e) => e.key);
