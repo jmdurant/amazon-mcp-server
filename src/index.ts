@@ -7,7 +7,12 @@ const config = loadConfig();
 
 const server = new McpServer(
   { name: 'amazon-mcp-server', version: '1.0.0' },
-  { capabilities: { logging: {} } }
+  {
+    capabilities: { logging: {} },
+    ...(!config && {
+      instructions: 'Amazon Appstore MCP Server — setup required. Run the "setup" tool for configuration instructions.',
+    }),
+  }
 );
 
 if (config) {
