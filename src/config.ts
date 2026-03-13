@@ -3,12 +3,28 @@ export interface Config {
   clientSecret: string;
 }
 
-export function loadConfig(): Config {
-  const clientId = process.env.AMAZON_CLIENT_ID;
-  const clientSecret = process.env.AMAZON_CLIENT_SECRET;
+const REQUIRED_ENV_VARS: { key: string; label: string }[] = [
+  { key: 'AMAZON_CLIENT_ID', label: 'Amazon Client ID' },
+  { key: 'AMAZON_CLIENT_SECRET', label: 'Amazon Client Secret' },
+];
 
-  if (!clientId) throw new Error('AMAZON_CLIENT_ID environment variable is required');
-  if (!clientSecret) throw new Error('AMAZON_CLIENT_SECRET environment variable is required');
+export interface ConfigError {
+  key: string;
+  label: string;
+}
 
-  return { clientId, clientSecret };
+export function getConfigErrors(): ConfigError[] {
+  return REQUIRED_ENV_VARS.filter(({ key }) => !process.env[key]);
+}
+
+export function loadConfig(): Config | null {
+  const errors = getConfigErrors();
+  if (errors.length > 0) {
+    return null;
+  }
+
+  return {
+    clientId: process.env.AMAZON_CLIENT_ID!,
+    clientSecret: process.env.AMAZON_CLIENT_SECRET!,
+  };
 }
