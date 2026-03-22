@@ -14,33 +14,6 @@
 4. Under the "Web Settings" tab, note the **Client ID** and **Client Secret**
 5. Ensure the security profile has Appstore API permissions
 
-## Environment Variables
-
-Set these in your shell profile:
-
-### macOS / Linux (`~/.zshrc` or `~/.bashrc`)
-
-```bash
-export AMAZON_CLIENT_ID="amzn1.application-oa2-client.your_client_id"
-export AMAZON_CLIENT_SECRET="your_client_secret"
-```
-
-Then reload: `source ~/.zshrc`
-
-### Windows (PowerShell)
-
-```powershell
-$env:AMAZON_CLIENT_ID = "amzn1.application-oa2-client.your_client_id"
-$env:AMAZON_CLIENT_SECRET = "your_client_secret"
-```
-
-### Windows (CMD)
-
-```cmd
-setx AMAZON_CLIENT_ID "amzn1.application-oa2-client.your_client_id"
-setx AMAZON_CLIENT_SECRET "your_client_secret"
-```
-
 ## Install & Build
 
 ```bash
@@ -48,25 +21,76 @@ npm install
 npm run build
 ```
 
-## Add to Claude Code
+## Configure Credentials
 
-Copy `.mcp.json.example` to your project's `.mcp.json`:
+### Option 1: Shared `.env` file (Recommended)
+
+Create `~/.env` with your credentials. The `.mcp.json` shell wrapper sources this automatically.
 
 ```bash
-cp .mcp.json.example /path/to/your/project/.mcp.json
+# ~/.env
+AMAZON_CLIENT_ID="amzn1.application-oa2-client.your_client_id"
+AMAZON_CLIENT_SECRET="your_client_secret"
 ```
 
-Update the `args` path:
+Secure it:
+```bash
+chmod 600 ~/.env
+```
+
+You can also create a project-level `.env` to override per-project.
+
+### Option 2: Shell profile environment variables
+
+#### macOS / Linux (`~/.zshrc` or `~/.bashrc`)
+
+```bash
+export AMAZON_CLIENT_ID="amzn1.application-oa2-client.your_client_id"
+export AMAZON_CLIENT_SECRET="your_client_secret"
+```
+
+#### Windows (PowerShell)
+
+```powershell
+$env:AMAZON_CLIENT_ID = "amzn1.application-oa2-client.your_client_id"
+$env:AMAZON_CLIENT_SECRET = "your_client_secret"
+```
+
+#### Windows (CMD — persistent)
+
+```cmd
+setx AMAZON_CLIENT_ID "amzn1.application-oa2-client.your_client_id"
+setx AMAZON_CLIENT_SECRET "your_client_secret"
+```
+
+## Add to Claude Code
+
+Copy `.mcp.json.example` to your project's `.mcp.json` (or merge into existing):
 
 ```json
-"args": ["/full/path/to/amazon-mcp-server/dist/index.js"]
+{
+  "mcpServers": {
+    "amazon-appstore": {
+      "command": "bash",
+      "args": ["-c", "set -a && source $HOME/.env && source ./.env 2>/dev/null && exec node $HOME/amazon-mcp-server/dist/index.js"]
+    }
+  }
+}
 ```
 
-Restart Claude Code.
+How it works:
+- `set -a` — auto-exports all sourced variables
+- `source $HOME/.env` — loads shared credentials
+- `source ./.env 2>/dev/null` — loads project overrides (silent if missing)
+- `exec node ...` — launches the server
+
+Restart Claude Code after adding.
 
 ## Security
 
 - **Never commit your Client Secret** to any repository
-- **Never hardcode credentials** in `.mcp.json` — use `${ENV_VAR}` references
+- **Never hardcode credentials** in `.mcp.json` — use the `.env` sourcing pattern
+- Secure your `.env`: `chmod 600 ~/.env`
+- Add `.env` to your global gitignore: `echo ".env" >> ~/.gitignore_global`
 - Rotate credentials periodically via Amazon Developer Console
 - Use the principle of least privilege for API permissions
