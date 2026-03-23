@@ -1,8 +1,12 @@
 {
   "mcpServers": {
     "amazon-appstore": {
-      "command": "bash",
-      "args": ["-c", "set -a && source $HOME/.env && source ./.env 2>/dev/null && exec node $HOME/amazon-mcp-server/dist/index.js"]
+      "command": "node",
+      "args": ["/path/to/amazon-mcp-server/dist/index.js"],
+      "env": {
+        "AMAZON_CLIENT_ID": "YOUR_CLIENT_ID",
+        "AMAZON_CLIENT_SECRET": "YOUR_CLIENT_SECRET"
+      }
     }
   }
 }

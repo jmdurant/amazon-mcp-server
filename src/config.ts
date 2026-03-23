@@ -13,8 +13,15 @@ export interface ConfigError {
   label: string;
 }
 
+function isPlaceholder(value: string): boolean {
+  return /^(YOUR_|your_|C:\/path\/|\/path\/)/i.test(value);
+}
+
 export function getConfigErrors(): ConfigError[] {
-  return REQUIRED_ENV_VARS.filter(({ key }) => !process.env[key]);
+  return REQUIRED_ENV_VARS.filter(({ key }) => {
+    const val = process.env[key];
+    return !val || isPlaceholder(val);
+  });
 }
 
 export function loadConfig(): Config | null {
