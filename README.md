@@ -28,18 +28,15 @@ Add to your project's `.mcp.json` (or copy the one included in this repo):
   "mcpServers": {
     "amazon-appstore": {
       "command": "node",
-      "args": ["${HOME}/amazon-mcp-server/dist/index.js"],
+      "args": ["/path/to/amazon-mcp-server/dist/index.js"],
       "env": {
-        "HOME": "${USERPROFILE}",
-        "AMAZON_CLIENT_ID": "your_client_id",
-        "AMAZON_CLIENT_SECRET": "your_client_secret"
+        "AMAZON_CLIENT_ID": "YOUR_CLIENT_ID",
+        "AMAZON_CLIENT_SECRET": "YOUR_CLIENT_SECRET"
       }
     }
   }
 }
 ```
-
-> The `"HOME": "${USERPROFILE}"` line ensures cross-platform compatibility (Windows sets `USERPROFILE`, macOS/Linux set `HOME`). On macOS/Linux you can remove it.
 
 The server will guide you through setup if credentials are missing or invalid.
 
